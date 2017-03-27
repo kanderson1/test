@@ -29,8 +29,10 @@ import org.sonar.java.se.constraint.Constraint;
 import org.sonar.java.se.constraint.ObjectConstraint;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class RelationalSymbolicValue extends BinarySymbolicValue {
@@ -215,9 +217,11 @@ public class RelationalSymbolicValue extends BinarySymbolicValue {
 
   private List<RelationalSymbolicValue> transitiveRelations(ProgramState programState) {
     BinaryRelation relation = binaryRelation();
-    return programState.getKnownRelations().stream()
+    Set<BinaryRelation> knownRelations = new HashSet<>(programState.getKnownRelations());
+    return knownRelations.stream()
       .map(r -> r.deduceTransitiveOrSimplified(relation))
       .filter(Objects::nonNull)
+      .filter(r -> !knownRelations.contains(r))
       .map(RelationalSymbolicValue::binaryRelationToSymbolicValue)
       .collect(Collectors.toList());
   }
